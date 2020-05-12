@@ -9,9 +9,20 @@ It has been tested with Python 3.6 & nginx 1.14 & ubuntu 18.04.
 
 Features
 --------
+
 + Only intervene before the real request occurs, and do not participate in communication after that.
++ For clients, no extra configuration or action is required
 + Supports Basic Auth, GET, POST, COOKIE, HEADER authentication.
 + Supports GET/POST redirection.
+
+
+Compare frp and port knocking
+------
+
++ Do not forward traffic from clients and real servers
++ Maximum bandwidth for direct connection between client and real server
++ The real server only needs to turn on SSH
+
 
 Workflow
 --------------
