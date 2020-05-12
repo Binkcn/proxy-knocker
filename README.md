@@ -7,6 +7,8 @@ and create firewall rules to allow the specified client IP to pass.
 
 It has been tested with Python 3.6 & nginx 1.14 & ubuntu 18.04.
 
+ [中文 README.md](README_zh.md)
+
 Features
 --------
 
