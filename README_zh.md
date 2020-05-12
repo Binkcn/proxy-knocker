@@ -1,71 +1,73 @@
 Proxy knocker
 =========
 
-The proxy knocker can run on a hidden server (such as VPS), accept HTTPS requests, 
-conduct identity authentication (optional), then login to the real server through SSH, 
-and create firewall rules to allow the specified client IP to pass.
 
-It has been tested with Python 3.6 & nginx 1.14 & ubuntu 18.04.
+代理敲门器可以在隐藏服务器（如VPS）上运行，接受HTTPS请求，
+进行身份认证（可选），然后通过SSH登录到真正的服务器，
+并创建防火墙规则以允许指定的客户端IP通过。
 
- [中文 README.md](README_zh.md)
+已经在 Python 3.6、nginx 1.14 和 ubuntu 18.04 环境下进行了测试。
 
-Features
+[English README.md](README.md)
+
+功能
 --------
 
-+ Only intervene before the real request occurs, and do not participate in communication after that.
-+ For clients, no extra configuration or action is required
-+ Supports Basic Auth, GET, POST, COOKIE, HEADER authentication.
-+ Supports GET/POST redirection.
++ 只在真正的请求发生之前介入，之后不参与沟通。
++ 对于客户端，不需要额外的配置或操作
++ 支持 BASIC AUTH、GET、POST、COOKIE、HEADER 身份验证。
++ 支持 GET/POST 重定向。
 
 
-Compare frp and port knocking
+对比 frp 和 port knocking
 ------
 
-+ Do not forward traffic from clients and real servers
-+ Maximum bandwidth for direct connection between client and real server
-+ The real server only needs to turn on SSH
++ 不转发来自客户端和真实服务器的流量
++ 客户端和真实服务器之间采用最大带宽直接连接
++ 真正的服务器上只需要打开SSH
 
 
-Workflow
+工作方式
 --------------
 
-1. Accept GET / POST requests from any requester. (Web browser, Interface request of  mobile app or desktop program)
-2. Authentication (optional)
-3. Login to the real server (such as NAS) through SSH, and operate the firewall to add the IP whitelist of the requester.
-4. Redirect this request to a real server (such as NAS)
-5. Requester establishes connection with real server.
+1. 接受来自任何请求者的 GET/POST 请求。（比如：浏览器、手机APP或桌面程序的接口请求）
+2. 身份验证（可选）
+3. 通过SSH登录到真正的服务器（如NAS），并操作防火墙添加请求者的IP白名单。
+4. 将此请求重定向到实际服务器（如NAS）
+5. 请求者建立与真实服务器的连接。
 
-Installation
+
+安装
 ------------
 
-**Prerequisites**
+**必要条件**
 
 + Python 3.6+ 
-  * Python 2.x is not supported.
+  * Python 2.x 暂不支持.
 + [Paramiko](https://github.com/paramiko/paramiko)
-+ Nginx 1.14+ (Nginx is required to provide SSL)
++ Nginx 1.14+ (采用Nginx来提供https服务)
 
-**Install**
+**开始安装**
 
-1. Clone from GitHub
+1. 克隆本仓库
 
         git clone https://github.com/Binkcn/proxy-knocker.git
 
-2. Install Python & pip & Paramiko
+2. 安装 Python & pip & Paramiko
 
         sudo apt-get update
         sudo apt-get install -y python3
         sudo pip3 install paramiko
 
-3. Configuration
+3. 修改配置
 
         vim config.py
 
-4. Running services
+4. 运行服务
 
         python3 proxy_knocker.py
 
-5. Forward the request to proxy knocker through nginx
+5. 用 Nginx 转发请求到 Proxy Knocker 服务监听端口
 
         server {
             listen 443 ssl;
@@ -93,7 +95,7 @@ Installation
             }
         }
 
-Configuration Syntax
+配置文件参考
 --------------------
 
         # Server listen
@@ -127,4 +129,5 @@ Configuration Syntax
         IPTABLES_APPEND			= 'sudo iptables -v -A INPUT -s {IP} -p tcp --dport ' + str(IPTABLES_PORT) + ' -j ACCEPT'
         IPTABLES_DELETE			= 'sudo iptables -v -D INPUT -s {IP} -p tcp --dport ' + str(IPTABLES_PORT) + ' -j ACCEPT'
         IPTABLES_CONFIRM		= 'sudo iptables -L -n | grep ' + str(IPTABLES_PORT) + ' | grep ACCEPT | grep {IP} | wc -l'
+
 
