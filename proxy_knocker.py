@@ -35,8 +35,8 @@ class ProxyKnockerServerHandler(http.server.BaseHTTPRequestHandler):
 
 		client_ip, client_port = self.client_address
 
-		if self.headers.get('X-Real-IPs') != None:
-			client_ip = self.headers.get('X-Real-IPs')
+		if self.headers.get('X-Real-IP') != None:
+			client_ip = self.headers.get('X-Real-IP')
 
 		if self.do_iptable_confirm(client_ip) == True:
 			pass
