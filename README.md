@@ -145,6 +145,15 @@ and then convert them to headers on nginx of receiving server.
 Nginx configuration on real server:
 
          # Restore get parameter to header send
-         proxy_set_header Authorization $arg_HTTP_Authorization;
-         proxy_set_header WWW-Authenticate $arg_HTTP_WWW-Authenticate;
-         proxy_set_header Cookie $arg_HTTP_Cookie;
+
+         set_unescape_uri $Authorization $arg_HTTP_Authorization;
+         set_unescape_uri $WWWAuthenticate $arg_HTTP_WWW-Authenticate;
+         set_unescape_uri $Cookie $arg_HTTP_Cookie;
+
+         proxy_set_header Authorization $Authorization;
+         proxy_set_header WWW-Authenticate $WWWAuthenticate;
+         proxy_set_header Cookie $Cookie;
+
+
+_You need to `set_unescape_uri` to decode the `GET` parameter, but the module is not distributed with the Nginx source, so you need to compile it manually._ See [ngx_set_misc#set_unescape_uri](https://github.com/openresty/set-misc-nginx-module#set_unescape_uri)
+
