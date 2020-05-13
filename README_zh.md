@@ -144,15 +144,27 @@ HEADER 参数跟随重定向？
 
 真实服务器上的 Nginx 配置参考：
 
-         # Restore get parameter to header send
+        # Restore get parameter to header send
 
-         set_unescape_uri $Authorization $arg_HTTP_Authorization;
-         set_unescape_uri $WWWAuthenticate $arg_HTTP_WWW-Authenticate;
-         set_unescape_uri $Cookie $arg_HTTP_Cookie;
+        set $Authorization $http_authorization;
+        set $WWWAuthenticate $http_www-authenticate;
+        set $Cookie $http_cookie;
 
-         proxy_set_header Authorization $Authorization;
-         proxy_set_header WWW-Authenticate $WWWAuthenticate;
-         proxy_set_header Cookie $Cookie;
+        if ($arg_HTTP_Authorization){
+            set_unescape_uri $Authorization $arg_HTTP_Authorization;
+        }
+
+        if ($arg_HTTP_WWW-Authenticate){
+            set_unescape_uri $WWWAuthenticate $arg_HTTP_WWW-Authenticate;
+        }
+
+        if ($arg_HTTP_Cookie){
+            set_unescape_uri $Cookie $arg_HTTP_Cookie;
+        }
+
+        proxy_set_header Authorization $Authorization;
+        proxy_set_header WWW-Authenticate $WWWAuthenticate;
+        proxy_set_header Cookie $Cookie;
 
 
 _你需要 `set_unescape_uri` 对 `GET` 参数值进行反编码，但是该模块并没有包含在Nginx发行版源码中，所以你需要手动编译 Nginx。_ 参见 [ngx_set_misc#set_unescape_uri](https://github.com/openresty/set-misc-nginx-module#set_unescape_uri)
