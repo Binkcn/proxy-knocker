@@ -104,6 +104,10 @@ Configuration Syntax
         REDIRECT_CODE			= 307
         REDIRECT_URL			= 'https://nas.yourdomain.com:1443'
 
+        # Security header converted to get parameter sent.
+        REDIRECT_HEADER_TO_GET  = True
+        REDIRECT_HEADERS    = ['Authorization', 'WWW-Authenticate', 'Cookie', 'Cookie2']
+
         # Auth method
         AUTH_TYPE				= 'NONE'				# 'NONE', 'BASIC', 'GET', 'POST', 'COOKIE', 'HEADER'
 
@@ -128,3 +132,19 @@ Configuration Syntax
         IPTABLES_DELETE			= 'sudo iptables -v -D INPUT -s {IP} -p tcp --dport ' + str(IPTABLES_PORT) + ' -j ACCEPT'
         IPTABLES_CONFIRM		= 'sudo iptables -L -n | grep ' + str(IPTABLES_PORT) + ' | grep ACCEPT | grep {IP} | wc -l'
 
+
+
+HEADER parameter follow redirection?
+--------------
+
+>When the forwarded request contains secure information headers, such as Authorization, WWW-Authenticate,
+Cookie and other headers, if they are cross domain, these headers will not be copied to the new request.
+Therefore, when these headers are included in the request, change them to get parameter to send follow redirection,
+and then convert them to headers on nginx of receiving server.
+
+Nginx configuration on real server:
+
+         # Restore get parameter to header send
+         proxy_set_header Authorization $arg_HTTP_Authorization;
+         proxy_set_header WWW-Authenticate $arg_HTTP_WWW-Authenticate;
+         proxy_set_header Cookie $arg_HTTP_Cookie;

@@ -9,6 +9,10 @@ LISTEN_PORT				= 8880
 REDIRECT_CODE			= 307
 REDIRECT_URL			= 'https://nas.yourdomain.com:1443'
 
+# Security header converted to get parameter sent.
+REDIRECT_HEADER_TO_GET	= True
+REDIRECT_HEADERS		= ['Authorization', 'WWW-Authenticate', 'Cookie', 'Cookie2']
+
 # Auth method
 AUTH_TYPE				= 'NONE'				# 'NONE', 'BASIC', 'GET', 'POST', 'COOKIE', 'HEADER'
 

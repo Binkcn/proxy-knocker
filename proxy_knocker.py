@@ -82,7 +82,7 @@ class ProxyKnockerServerHandler(http.server.BaseHTTPRequestHandler):
 			raise err
 		else:
 			print('[ERR] SSH exec failed.')
-			
+
 			return False
 
 
@@ -134,8 +134,34 @@ class ProxyKnockerServerHandler(http.server.BaseHTTPRequestHandler):
 		return False
 
 	def do_redirect(self):
+		'''
+		When the forwarded request contains secure information headers, such as Authorization, WWW-Authenticate,
+		Cookie and other headers, if they are cross domain, these headers will not be copied to the new request.
+
+		Therefore, when these headers are included in the request, change them to get parameter to send follow redirection,
+		and then convert them to headers on nginx of receiving server.
+		'''
+
+		path = self.path
+
+		if config.REDIRECT_HEADER_TO_GET:
+			append_args = {}
+
+			for headerKey in config.REDIRECT_HEADERS:
+				if headerKey in self.headers:
+					append_args['HTTP_' + headerKey] = self.headers.get(headerKey)
+
+			if len(append_args) > 0:
+				append_args = urllib.parse.urlencode(append_args)
+				urlparse = urllib.parse.urlparse(self.path)
+
+				if len(urlparse.query) == 0:
+					path = self.path + '?' + append_args
+				else:
+					path = self.path + '&' + append_args
+
 		self.send_response(config.REDIRECT_CODE)
-		self.send_header('Location', config.REDIRECT_URL + self.path)
+		self.send_header('Location', config.REDIRECT_URL + path)
 		self.end_headers()
 
 

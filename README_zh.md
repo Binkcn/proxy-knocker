@@ -106,6 +106,10 @@ Proxy knocker
         REDIRECT_CODE			= 307
         REDIRECT_URL			= 'https://nas.yourdomain.com:1443'
 
+        # Security header converted to get parameter sent.
+        REDIRECT_HEADER_TO_GET  = True
+        REDIRECT_HEADERS    = ['Authorization', 'WWW-Authenticate', 'Cookie', 'Cookie2']
+
         # Auth method
         AUTH_TYPE				= 'NONE'				# 'NONE', 'BASIC', 'GET', 'POST', 'COOKIE', 'HEADER'
 
@@ -131,3 +135,16 @@ Proxy knocker
         IPTABLES_CONFIRM		= 'sudo iptables -L -n | grep ' + str(IPTABLES_PORT) + ' | grep ACCEPT | grep {IP} | wc -l'
 
 
+HEADER 参数跟随重定向？
+--------------
+
+  >当转发的请求包含安全 Header 时，例如 Authorization, WWW-Authenticate,
+  Cookie 和其他 Header 时，如果它们是跨域的，则不会将这些 Header 复制到新请求中。
+  因此，当这些头包含在请求中时，开启 `REDIRECT_HEADER_TO_GET = True` 将其更改为 `GET` 参数以发送跟随重定向，然后在真实服务器上使用Nginx将它们转换回HEADER头。
+
+真实服务器上的 Nginx 配置参考：
+
+         # Restore get parameter to header send
+         proxy_set_header Authorization $arg_HTTP_Authorization;
+         proxy_set_header WWW-Authenticate $arg_HTTP_WWW-Authenticate;
+         proxy_set_header Cookie $arg_HTTP_Cookie;
