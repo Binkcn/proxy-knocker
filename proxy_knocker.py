@@ -3,9 +3,7 @@
 
 import http.server
 import http.cookies
-import base64
-import json
-import urllib
+import json, time, base64, urllib
 import paramiko
 
 import config
@@ -67,9 +65,26 @@ class ProxyKnockerServerHandler(http.server.BaseHTTPRequestHandler):
 		return True
 
 	def do_ssh_exec(self, command):
-		stdin, stdout, stderr = self.server.ssh_client.exec_command(command)
-		response = stdout.read().decode('utf-8')
-		return response
+		if self.server.ssh_client.get_transport().is_active() == False:
+			print('[WARN] SSH session not active, Reconnecting...')
+
+			if self.server.connect_ssh() == False:
+				print('[ERR] SSH reconnect failed.')
+
+				return False
+
+		try:
+			stdin, stdout, stderr = self.server.ssh_client.exec_command(command, timeout=5)
+			response = stdout.read().decode('utf-8')
+
+			return response
+		except TimeoutError as err:
+			raise err
+		else:
+			print('[ERR] SSH exec failed.')
+			
+			return False
+
 
 	def do_auth(self):
 		if config.AUTH_TYPE == 'BASIC':
@@ -130,14 +145,21 @@ class ProxyKnockerHTTPServer(http.server.HTTPServer):
 
 		self.ssh_client = None
 
+	def __del__(self):
+		if self.ssh_client:
+			self.ssh_client.close()
+
+		self.shutdown()
+
 	def connect_ssh(self):
-		self.ssh_client = paramiko.SSHClient()
-		self.ssh_client.set_missing_host_key_policy(paramiko.AutoAddPolicy())
+		if self.ssh_client == None:
+			self.ssh_client = paramiko.SSHClient()
+			self.ssh_client.set_missing_host_key_policy(paramiko.AutoAddPolicy())
 
 		print('Connect SSH %s@%s:%s' % (config.SSH_USER, config.SSH_ADDR, config.SSH_PORT))
 
 		try:
-			self.ssh_client.connect(config.SSH_ADDR, port = config.SSH_PORT, username = config.SSH_USER, password = config.SSH_PASS)
+			self.ssh_client.connect(config.SSH_ADDR, port = config.SSH_PORT, username = config.SSH_USER, password = config.SSH_PASS, timeout = 10)
 
 			print('Connect SSH Success.')
 
